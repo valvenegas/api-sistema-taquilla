@@ -16,5 +16,14 @@
     "pg": "^8.23.1",
     "swagger-jsdoc": "^6.3.0",
     "swagger-ui-express": "^5.0.1"
-  }
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/valvenegas/api-sistema-taquilla.git"
+  },
+  "bugs": {
+    "url": "https://github.com/valvenegas/api-sistema-taquilla/issues"
+  },
+  "homepage": "https://github.com/valvenegas/api-sistema-taquilla#readme"
 }

@@ -30,6 +30,37 @@ router.get('/', async (req, res) => {
 
 /**
  * @swagger
+ * /api/funciones/{id}:
+ *   get:
+ *     summary: Obtener una función por ID
+ *     tags: [Funciones]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Función encontrada
+ *       404:
+ *         description: Función no encontrada
+ */
+router.get('/:id', async (req, res) => {
+    try {
+        const {id} = req.params;
+        const resultado = await db.query('SELECT * FROM funciones WHERE id_funcion = $1', [id]);
+        if (resultado.rows.length === 0) {
+            return res.status(404).json({ error: 'Función no encontrada' });
+        }
+        res.status(200).json(resultado.rows[0]);
+    } catch (error) {
+        res.status(500).json({ error: 'Error al consultar la base de datos' });
+    }
+});
+
+/**
+ * @swagger
  * /api/funciones:
  *   post:
  *     summary: Agregar una función
@@ -43,8 +74,9 @@ router.get('/', async (req, res) => {
  *             required: [fecha_hora_proyeccion, id_pelicula_obra, id_sala]
  *             properties:
  *               fecha_hora_proyeccion:
- *                 type: timestamp
- *              id_pelicula_obra:
+ *                 type: string
+ *                 format: date-time
+ *               id_pelicula_obra:
  *                 type: integer
  *               id_sala:
  *                 type: integer
@@ -83,7 +115,8 @@ router.post('/', async (req, res) => {
  *             type: object
  *             properties:
  *               fecha_hora_proyeccion:
- *                 type: timestamp
+ *                 type: string
+ *                 format: date-time
  *               id_pelicula_obra:
  *                 type: integer
  *               id_sala:
@@ -91,13 +124,18 @@ router.post('/', async (req, res) => {
  *     responses:
  *       200:
  *         description: Función actualizada
+ *       404:
+ *         description: Función no encontrada
  */
 router.put('/:id', async (req, res) => {
     try {
         const {id} = req.params;
         const {fecha_hora_proyeccion, id_pelicula_obra, id_sala} = req.body;
-        const query = 'UPDATE funciones SET fecha_hora_proyeccion = $1, id_pelicula_obra = $2, id_sala = $3 WHERE id = $4 RETURNING *';
+        const query = 'UPDATE funciones SET fecha_hora_proyeccion = $1, id_pelicula_obra = $2, id_sala = $3 WHERE id_funcion = $4 RETURNING *';
         const resultado = await db.query(query, [fecha_hora_proyeccion, id_pelicula_obra, id_sala, id]);
+        if (resultado.rows.length === 0) {
+            return res.status(404).json({ error: 'Función no encontrada' });
+        }
         res.status(200).json({message: 'Función actualizada exitosamente', funcion: resultado.rows[0]});
     } catch (error) {
         res.status(500).json({ error: 'Error al actualizar la función' });
@@ -119,12 +157,17 @@ router.put('/:id', async (req, res) => {
  *     responses:
  *       200:
  *         description: Función eliminada
+ *       404:
+ *         description: Función no encontrada
  */
 router.delete('/:id', async (req, res) => {
     try {
         const {id} = req.params;
-        const query = 'DELETE FROM funciones WHERE id = $1 RETURNING *';
-        await db.query(query, [id]);
+        const query = 'DELETE FROM funciones WHERE id_funcion = $1 RETURNING *';
+        const resultado = await db.query(query, [id]);
+        if (resultado.rows.length === 0) {
+            return res.status(404).json({ error: 'Función no encontrada' });
+        }
         res.status(200).json({message: 'Función eliminada exitosamente'});
     } catch (error) {
         res.status(500).json({ error: 'Error al eliminar la función' });
